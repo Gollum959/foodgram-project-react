@@ -24,6 +24,7 @@ class UserRegistrationSerializer(UserCreateSerializer):
             'username',
             'first_name',
             'last_name',
+            'password'
         )
 
 
@@ -32,6 +33,8 @@ class SpecialUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request', None)
+        print(request)
+        print(obj.email)
         if request:
             return obj in request.user.is_subscribed.get_queryset()
         return False
@@ -134,7 +137,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 class IngredientField(serializers.Serializer):
     id = serializers.IntegerField(min_value=0)
     amount = serializers.DecimalField(
-        max_digits=5, decimal_places=1, min_value=1.0
+        max_digits=5, decimal_places=1, min_value=0.01
     )
 
     def validate(self, data):
@@ -170,7 +173,8 @@ class RecipeSerializerSave(serializers.ModelSerializer):
 
     def to_representation(self, recipe):
         """Creates response using serializer RecipesSerializer."""
-        serializer = RecipeSerializer(data=recipe, context={'request': self})
+        serializer = RecipeSerializer(instance=recipe, context={'request': self})
+#        is_valid = serializer.is_valid(raise_exception=True)
         return serializer.data
 
     @transaction.atomic
