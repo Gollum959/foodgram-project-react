@@ -99,7 +99,7 @@ class RecipeIngredient(models.Model):
         max_digits=5,
         decimal_places=1,
         validators=(
-            MinValueValidator(1.0),
+            MinValueValidator(0.01),
         )
     )
 

@@ -7,14 +7,6 @@ from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
 from users.models import User
 
 
-class IsFavorite(serializers.RelatedField):
-    def to_representation(self, value):
-        print(value)
-        if value:
-            return 'True'
-        return 'False'
-
-
 class UserRegistrationSerializer(UserCreateSerializer):
 
     class Meta(UserCreateSerializer.Meta):
@@ -33,8 +25,6 @@ class SpecialUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request', None)
-        print(request)
-        print(obj.email)
         if request:
             return obj in request.user.is_subscribed.get_queryset()
         return False
@@ -173,8 +163,7 @@ class RecipeSerializerSave(serializers.ModelSerializer):
 
     def to_representation(self, recipe):
         """Creates response using serializer RecipesSerializer."""
-        serializer = RecipeSerializer(instance=recipe, context={'request': self})
-#        is_valid = serializer.is_valid(raise_exception=True)
+        serializer = RecipeSerializer(instance=recipe, context=self.context)
         return serializer.data
 
     @transaction.atomic
@@ -213,3 +202,46 @@ class RecipeSerializerSave(serializers.ModelSerializer):
             )
         recipe.save()
         return recipe
+
+
+class IsFavoritAndCart(serializers.ModelSerializer):
+    """Serializer for """
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time'
+        )
+
+
+class UserSubscriptionSerializer(SpecialUserSerializer):
+    """Serializer for """
+    recipe = serializers.SerializerMethodField('get_items')
+    is_subscribed = serializers.SerializerMethodField()
+    recipes_count = serializers.IntegerField(read_only=True)
+
+    def get_items(self, data):
+        recipes_limit = self.context['request'].query_params.get(
+            'recipes_limit', default='')
+        recipes = Recipe.objects.filter(author=data)
+        if recipes_limit.isnumeric() and int(recipes_limit) > 0:
+            recipes = Recipe.objects.filter(author=data)[:int(recipes_limit)]
+        serializer = IsFavoritAndCart(instance=recipes, many=True)
+        return serializer.data
+
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'password',
+            'is_subscribed',
+            'recipe',
+            'recipes_count',
+        )
