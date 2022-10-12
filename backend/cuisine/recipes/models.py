@@ -105,3 +105,6 @@ class RecipeIngredient(models.Model):
 
     class Meta:
         ordering = ('recipe', 'ingredient', )
+
+    def __str__(self) -> str:
+        return f'{self.ingredient}, {self.amount}'

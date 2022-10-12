@@ -25,7 +25,7 @@ class SpecialUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request', None)
-        if request:
+        if request and not request.user.is_anonymous:
             return obj in request.user.is_subscribed.get_queryset()
         return False
 
@@ -98,13 +98,13 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorite(self, obj):
         request = self.context.get('request', None)
-        if request:
+        if request and not request.user.is_anonymous:
             return obj in request.user.is_favorite.get_queryset()
         return False
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request', None)
-        if request:
+        if request and not request.user.is_anonymous:
             return obj in request.user.is_in_shopping_cart.get_queryset()
         return False
 
@@ -140,12 +140,13 @@ class RecipeSerializerSave(serializers.ModelSerializer):
 
     ingredients = IngredientField(many=True, allow_empty=False)
     tags = serializers.ListField(
-        child=serializers.IntegerField(min_value=0), allow_empty=False
+        child=serializers.IntegerField(min_value=0), allow_empty=False,
     )
     image = Base64ImageField()
 
     def validate(self, data):
-        for tag in data['tags']:
+        tags = data['tags'] if 'tags' in data.keys() else []
+        for tag in tags:
             if not Tag.objects.filter(pk=tag).exists():
                 raise serializers.ValidationError('This tag doesn\'t exist')
         return data
@@ -191,8 +192,9 @@ class RecipeSerializerSave(serializers.ModelSerializer):
         recipe.text = validated_data.get('text', recipe.text)
         recipe.cooking_time = validated_data.get(
             'cooking_time', recipe.cooking_time)
-        recipe.tags.set(validated_data.pop('tags'))
-        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags', recipe.tags)
+        recipe.tags.set(validated_data.pop('tags'), recipe.tags)
+        ingredients = validated_data.pop('ingredients', recipe.ingredients)
         recipe.ingredients.clear()
         for ingredient in ingredients:
             current_ingredient = Ingredient.objects.get(pk=ingredient['id'])

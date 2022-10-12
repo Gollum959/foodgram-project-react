@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 
 from api.views import (
     TagViewSet, IngredientViewSet, RecipeViewSet, AddRemoveFavoriteView,
-    AddRemoveCartView, UserSubscription, AddRemoveSubscriptionView)
+    AddRemoveCartView, UserSubscription, AddRemoveSubscriptionView,
+    UserShoppingCart)
 
 app_name = 'api'
 
@@ -26,7 +27,8 @@ urlpatterns = [
         AddRemoveSubscriptionView.as_view()
     ),
     path('users/subscriptions/', UserSubscription.as_view()),
-    path('v1/', include(router_v1.urls)),
+    path('recipes/download_shopping_cart/', UserShoppingCart.as_view()),
+    path('', include(router_v1.urls)),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
 ]
