@@ -10,13 +10,11 @@ class CharInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
 class RecipeFilter(django_filters.FilterSet):
     """Filter for Recepi by fields: author, tags."""
 
-  #  tags = django_filters.MultipleChoiceFilter(
-  #      field_name="tags__slug",
-  #  )
-    
+    tags = django_filters.MultipleChoiceFilter(
+        field_name="tags__slug",
+        lookup_expr='in',
+    )
+
     class Meta:
         model = Recipe
-        fields = {
-            'tags__slug': ['exact', 'in'],
-            'author': ['exact'],
-        }
+        fields = ('tags', 'author',)

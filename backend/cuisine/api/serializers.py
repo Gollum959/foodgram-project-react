@@ -63,7 +63,6 @@ class IngredientSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'measurement_unit',
-            'amount'
         )
 
 
@@ -93,10 +92,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientSerializer(
         source='recipeingredient_set', many=True,
     )
-    is_favorite = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
-    def get_is_favorite(self, obj):
+    def get_is_favorited(self, obj):
         request = self.context.get('request', None)
         if request and not request.user.is_anonymous:
             return obj in request.user.is_favorite.get_queryset()
@@ -119,7 +118,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'image',
             'text',
             'cooking_time',
-            'is_favorite',
+            'is_favorited',
             'is_in_shopping_cart'
         )
 
@@ -192,16 +191,17 @@ class RecipeSerializerSave(serializers.ModelSerializer):
         recipe.text = validated_data.get('text', recipe.text)
         recipe.cooking_time = validated_data.get(
             'cooking_time', recipe.cooking_time)
-        tags = validated_data.pop('tags', recipe.tags)
-        recipe.tags.set(validated_data.pop('tags'), recipe.tags)
-        ingredients = validated_data.pop('ingredients', recipe.ingredients)
-        recipe.ingredients.clear()
-        for ingredient in ingredients:
-            current_ingredient = Ingredient.objects.get(pk=ingredient['id'])
-            recipe.ingredients.add(
-                current_ingredient,
-                through_defaults={'amount': ingredient['amount']}
-            )
+        if 'tags' in validated_data.keys():
+            recipe.tags.set(validated_data.pop('tags'))
+        if 'ingredients' in validated_data.keys():
+            ingredients = validated_data.pop('ingredients')
+            recipe.ingredients.clear()
+            for ingredient in ingredients:
+                current_ingredient = Ingredient.objects.get(pk=ingredient['id'])
+                recipe.ingredients.add(
+                    current_ingredient,
+                    through_defaults={'amount': ingredient['amount']}
+                )
         recipe.save()
         return recipe
 
@@ -221,7 +221,7 @@ class IsFavoritAndCart(serializers.ModelSerializer):
 
 class UserSubscriptionSerializer(SpecialUserSerializer):
     """Serializer for """
-    recipe = serializers.SerializerMethodField('get_items')
+    recipes = serializers.SerializerMethodField('get_items')
     is_subscribed = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField(read_only=True)
 
@@ -242,8 +242,7 @@ class UserSubscriptionSerializer(SpecialUserSerializer):
             'username',
             'first_name',
             'last_name',
-            'password',
             'is_subscribed',
-            'recipe',
+            'recipes',
             'recipes_count',
         )

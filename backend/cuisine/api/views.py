@@ -21,6 +21,7 @@ class TagViewSet(ReadOnlyModelViewSet):
 
     serializer_class = TagSerializer
     permission_classes = (AllowAny, )
+    pagination_class = None
     queryset = Tag.objects.all()
 
 
@@ -28,6 +29,8 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     """Read only view class for Tag model"""
 
     serializer_class = IngredientSerializer
+    permission_classes = (AllowAny, )
+    pagination_class = None
     queryset = Ingredient.objects.all()
 
 
@@ -83,7 +86,7 @@ class CuisineSubscriber():
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         if recipe in user_filed.get_queryset():
             user_filed.remove(recipe)
-            return Response()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -138,11 +141,16 @@ class AddRemoveSubscriptionView(APIView):
             )
             return Response(serializer.data)
 
-    def delete(self, request, recipe_id):
-        resp = self.del_subscribe(recipe_id, self.request.user.is_favorite)
-        if resp.status_code == 400:
-            resp.data = {'recipe': f'recipe ID={recipe_id} not in favorite'}
-        return resp
+    def delete(self, request, user_id):
+        sub_user = get_object_or_404(User, pk=user_id)
+        if sub_user in self.request.user.is_subscribed.get_queryset():
+            self.request.user.is_subscribed.remove(sub_user)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(
+                {'user': f'user ID={user_id} not in subscribed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UserShoppingCart(APIView):
