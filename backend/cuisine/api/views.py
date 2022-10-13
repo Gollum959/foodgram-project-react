@@ -72,7 +72,7 @@ class UserSubscription(generics.ListAPIView):
         return queryset
 
 
-class AddRemoveCartView(APIView, CuisineSubscriber):
+class AddRemoveCartView(CuisineSubscriber):
     """View for cart"""
 
     def post(self, request, recipe_id):
@@ -89,7 +89,7 @@ class AddRemoveCartView(APIView, CuisineSubscriber):
         return resp
 
 
-class AddRemoveFavoriteView(APIView, CuisineSubscriber):
+class AddRemoveFavoriteView(CuisineSubscriber):
     """View for favorite"""
 
     def post(self, request, recipe_id):

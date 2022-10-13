@@ -1,12 +1,13 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from api.serializers import IsFavoritAndCart
 from recipes.models import Recipe
 
 
-class CuisineSubscriber():
+class CuisineSubscriber(APIView):
 
     def subscribe(self, recipe_id, user_filed):
         recipe = get_object_or_404(Recipe, pk=recipe_id)
