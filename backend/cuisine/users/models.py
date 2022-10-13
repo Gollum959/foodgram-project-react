@@ -16,7 +16,8 @@ class User(AbstractUser):
         verbose_name='User role',
         max_length=15,
         choices=ROLES,
-        default='user'
+        default='user',
+        help_text='The rights that the user has'
     )
     is_superuser = models.BooleanField(null=True)
     is_favorite = models.ManyToManyField(
@@ -36,4 +37,3 @@ class User(AbstractUser):
 
     class Meta:
         ordering = ('id', )
-

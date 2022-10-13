@@ -1,18 +1,18 @@
 from django.db.models import Count
-from rest_framework.views import APIView
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from api.custom_views import CuisineSubscriber
 from api.serializers import (
     TagSerializer, IngredientSerializer, RecipeSerializer,
-    RecipeSerializerSave, IsFavoritAndCart, UserSubscriptionSerializer
-)
-from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
+    RecipeSerializerSave, UserSubscriptionSerializer)
 from api.permissions import IsAuthorOrAdmin
+from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
 from users.models import User
 
 
@@ -61,7 +61,7 @@ class RecipeViewSet(ModelViewSet):
 
 
 class UserSubscription(generics.ListAPIView):
-
+    """View class for User subscription"""
     serializer_class = UserSubscriptionSerializer
 
     def get_queryset(self):
@@ -71,27 +71,8 @@ class UserSubscription(generics.ListAPIView):
         return queryset
 
 
-class CuisineSubscriber():
-
-    def subscribe(self, recipe_id, user_filed):
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-        if recipe in user_filed.get_queryset():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        else:
-            user_filed.add(recipe)
-            serializer = IsFavoritAndCart(recipe)
-            return Response(serializer.data)
-
-    def del_subscribe(self, recipe_id, user_filed):
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-        if recipe in user_filed.get_queryset():
-            user_filed.remove(recipe)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
 class AddRemoveCartView(APIView, CuisineSubscriber):
+    """View for cart"""
 
     def post(self, request, recipe_id):
         resp = self.subscribe(recipe_id, self.request.user.is_in_shopping_cart)
@@ -108,6 +89,7 @@ class AddRemoveCartView(APIView, CuisineSubscriber):
 
 
 class AddRemoveFavoriteView(APIView, CuisineSubscriber):
+    """View for favorite"""
 
     def post(self, request, recipe_id):
         resp = self.subscribe(recipe_id, self.request.user.is_favorite)
@@ -124,6 +106,7 @@ class AddRemoveFavoriteView(APIView, CuisineSubscriber):
 
 
 class AddRemoveSubscriptionView(APIView):
+    """View for subscription"""
 
     def post(self, request, user_id):
         sub_user = get_object_or_404(User, pk=user_id)
@@ -154,19 +137,28 @@ class AddRemoveSubscriptionView(APIView):
 
 
 class UserShoppingCart(APIView):
-
+    """View function for list of ingredients"""
     def get(self, request):
         shoping_cart = {}
         for recipe in self.request.user.is_in_shopping_cart.get_queryset():
             for ingredient in RecipeIngredient.objects.filter(recipe=recipe):
                 name = ingredient.ingredient.name
+                measurement_unit = ingredient.ingredient.measurement_unit
                 amount = ingredient.amount
                 if name in shoping_cart.keys():
-                    shoping_cart[name] += amount
+                    shoping_cart[name]['amount'] += amount
                 else:
-                    shoping_cart[name] = amount
-        print(shoping_cart)
-        return Response(
-                {'user': 'user ID=jopa already in subscribed'},
-                status=status.HTTP_400_BAD_REQUEST
+                    shoping_cart[name] = {
+                        'amount': amount,
+                        'unit': measurement_unit
+                    }
+        shopping_list = 'Shopping list: '
+        for ingr in shoping_cart:
+            shopping_list += (f'{ingr} ({shoping_cart[ingr]["unit"]})'
+                              f'- {shoping_cart[ingr]["amount"]}, ')
+        response = Response(
+            data=shopping_list,
+            content_type='text/plain;charset=UTF-8',
+            headers={'Content-Disposition': 'attachment'}
         )
+        return response
