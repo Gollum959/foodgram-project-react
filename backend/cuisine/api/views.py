@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -152,13 +153,13 @@ class UserShoppingCart(APIView):
                         'amount': amount,
                         'unit': measurement_unit
                     }
-        shopping_list = 'Shopping list: '
+        shopping_list = 'Shopping list:\n'
         for ingr in shoping_cart:
             shopping_list += (f'{ingr} ({shoping_cart[ingr]["unit"]})'
-                              f'- {shoping_cart[ingr]["amount"]}, ')
-        response = Response(
-            data=shopping_list,
-            content_type='text/plain;charset=UTF-8',
-            headers={'Content-Disposition': 'attachment'}
+                              f' - {shoping_cart[ingr]["amount"]}\n')
+        response = HttpResponse(
+            shopping_list,
+            content_type='text/plain;charset=UTF-8'
         )
+        response['Content-Disposition'] = 'attachment'
         return response
