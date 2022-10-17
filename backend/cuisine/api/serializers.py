@@ -29,8 +29,8 @@ class SpecialUserSerializer(UserSerializer):
         """Returns true if user is subscribed"""
         user = self.context.get('request').user
         return (
-            not user.is_anonymous and
-            user in user.is_subscribed.get_queryset()
+            not user.is_anonymous
+            and user in user.is_subscribed.get_queryset()
         )
 
     class Meta:
@@ -103,16 +103,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         """Returns true if the recipe is in favorites"""
         user = self.context.get('request').user
         return (
-            not user.is_anonymous and
-            obj in user.is_favorite.get_queryset()
+            not user.is_anonymous
+            and obj in user.is_favorite.get_queryset()
         )
 
     def get_is_in_shopping_cart(self, obj):
         """Returns true if the recipe is in shopping carts"""
         user = self.context.get('request').user
         return (
-            not user.is_anonymous and
-            obj in user.is_in_shopping_cart.get_queryset()
+            not user.is_anonymous
+            and obj in user.is_in_shopping_cart.get_queryset()
         )
 
     class Meta:
