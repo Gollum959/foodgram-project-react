@@ -15,15 +15,15 @@ router_v1.register('recipes', RecipeViewSet, basename='recipes')
 
 urlpatterns = [
     path(
-        r'recipes/<int:recipe_id>/favorite/',
+        'recipes/<int:recipe_id>/favorite/',
         AddRemoveFavoriteView.as_view()
     ),
     path(
-        r'recipes/<int:recipe_id>/shopping_cart/',
+        'recipes/<int:recipe_id>/shopping_cart/',
         AddRemoveCartView.as_view()
     ),
     path(
-        r'users/<int:user_id>/subscribe/',
+        'users/<int:user_id>/subscribe/',
         AddRemoveSubscriptionView.as_view()
     ),
     path('users/subscriptions/', UserSubscription.as_view()),

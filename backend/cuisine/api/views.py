@@ -13,6 +13,7 @@ from api.serializers import (
     TagSerializer, IngredientSerializer, RecipeSerializer,
     RecipeSerializerSave, UserSubscriptionSerializer)
 from api.permissions import IsAuthorOrAdmin
+from recipes.customfilters import IngredientFilter
 from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
 from users.models import User
 
@@ -32,6 +33,8 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny, )
     pagination_class = None
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = IngredientFilter
     queryset = Ingredient.objects.all()
 
 
@@ -77,14 +80,14 @@ class AddRemoveCartView(CuisineSubscriber):
 
     def post(self, request, recipe_id):
         resp = self.subscribe(recipe_id, self.request.user.is_in_shopping_cart)
-        if resp.status_code == 400:
+        if resp.status_code == status.HTTP_400_BAD_REQUEST:
             resp.data = {'recipe': f'recipe ID={recipe_id} already in cart'}
         return resp
 
     def delete(self, request, recipe_id):
         resp = self.del_subscribe(
             recipe_id, self.request.user.is_in_shopping_cart)
-        if resp.status_code == 400:
+        if resp.status_code == status.HTTP_400_BAD_REQUEST:
             resp.data = {'recipe': f'recipe ID={recipe_id} not in cart'}
         return resp
 
@@ -94,14 +97,14 @@ class AddRemoveFavoriteView(CuisineSubscriber):
 
     def post(self, request, recipe_id):
         resp = self.subscribe(recipe_id, self.request.user.is_favorite)
-        if resp.status_code == 400:
+        if resp.status_code == status.HTTP_400_BAD_REQUEST:
             resp.data = {
                 'recipe': f'recipe ID={recipe_id} already in favorite'}
         return resp
 
     def delete(self, request, recipe_id):
         resp = self.del_subscribe(recipe_id, self.request.user.is_favorite)
-        if resp.status_code == 400:
+        if resp.status_code == status.HTTP_400_BAD_REQUEST:
             resp.data = {'recipe': f'recipe ID={recipe_id} not in favorite'}
         return resp
 
@@ -114,6 +117,11 @@ class AddRemoveSubscriptionView(APIView):
         if sub_user in self.request.user.is_subscribed.get_queryset():
             return Response(
                 {'user': f'user ID={user_id} already in subscribed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        elif sub_user == self.request.user:
+            return Response(
+                {'user': 'Can\'t subscribe yourself'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         else:

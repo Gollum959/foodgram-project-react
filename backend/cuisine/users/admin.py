@@ -9,3 +9,12 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ('username', 'email', )
     search_fields = ('username', 'email', )
     list_editable = ('role', )
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.set_password(obj.password)
+        elif User.objects.get(pk=obj.id).password != obj.password:
+            obj.set_password(obj.password)
+        obj.is_staff = True if obj.role == 'admin' else False
+        obj.is_superuser = True if obj.role == 'admin' else False
+        obj.save()

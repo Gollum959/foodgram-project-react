@@ -1,7 +1,7 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxValueValidator, MinValueValidator, RegexValidator)
 from django.db import models
 
-from recipes.validators import hex_color_valid
 from users.models import User
 
 
@@ -54,7 +54,10 @@ class Tag(models.Model):
     color = models.CharField(
         unique=True,
         max_length=7,
-        validators=[hex_color_valid],
+        validators=[RegexValidator(
+            regex=r'#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$',
+            message='Please enter a valid HEX color')
+        ],
         verbose_name='Tag color',
     )
     slug = models.SlugField(
@@ -104,6 +107,12 @@ class RecipeIngredient(models.Model):
     )
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ingredient', 'recipe'],
+                name='recipe_ingr_unique'
+            )
+        ]
         ordering = ('recipe', 'ingredient', )
 
     def __str__(self) -> str:
