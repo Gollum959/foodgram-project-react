@@ -7,10 +7,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ../backend/cuisine/.env
+      - ./.env
 
   web:
-    build: ../backend/cuisine/
+    image: gollum959/cuisine
     restart: always
     volumes:
       - data_value:/app/data/
@@ -19,12 +19,10 @@ services:
     depends_on:
       - db
     env_file:
-      - ../backend/cuisine/.env
+      - ./.env
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: gollum959/cuisine_front
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
