@@ -27,10 +27,10 @@ class SpecialUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, user):
         """Returns true if user is subscribed"""
-        user = self.context.get('request').user
+        current_user = self.context.get('request').user
         return (
-            not user.is_anonymous
-            and user in user.is_subscribed.get_queryset()
+            not current_user.is_anonymous
+            and user in current_user.is_subscribed.get_queryset()
         )
 
     class Meta:
@@ -164,11 +164,10 @@ class RecipeSerializerSave(serializers.ModelSerializer):
         ingrs = data.get('ingredients') if 'ingredients' in data.keys() else []
         uniq_ingrs = []
         for ingredient in ingrs:
-            if ingredient.get('id') not in uniq_ingrs:
-                uniq_ingrs.append(ingredient.get('id'))
-            else:
+            if ingredient.get('id') in uniq_ingrs:
                 raise serializers.ValidationError(
                     'You have the same ingredients')
+            uniq_ingrs.append(ingredient.get('id'))
         return data
 
     class Meta:
