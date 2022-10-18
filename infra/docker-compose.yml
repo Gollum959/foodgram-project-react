@@ -22,7 +22,7 @@ services:
       - ./.env
 
   frontend:
-    image: gollum959/cuisine_front
+    image: gollum959/cuisine_front:v1.0
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
