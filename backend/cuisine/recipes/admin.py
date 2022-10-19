@@ -53,7 +53,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     list_display = ('name', 'author', )
     list_filter = ('author', 'name', 'tags', )
- #   inlines = (RecipeIngredientInline, )
+    inlines = (RecipeIngredientInline, )
 
     def count_subscribers(self, obj):
         count = obj.user_set.count()
