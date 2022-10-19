@@ -6,6 +6,8 @@ from users.models import User
 
 
 class Recipe(models.Model):
+    """Recipe model."""
+
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -45,6 +47,8 @@ class Recipe(models.Model):
 
 
 class Tag(models.Model):
+    """Tag model."""
+
     name = models.CharField(
         unique=True,
         max_length=200,
@@ -73,6 +77,8 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
+    """Ingredient model."""
+
     name = models.CharField(
         max_length=200,
         verbose_name='Recipe ingredient'
@@ -90,6 +96,8 @@ class Ingredient(models.Model):
 
 
 class RecipeIngredient(models.Model):
+    """Many2many model for recipe and ingredient."""
+
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE

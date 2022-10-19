@@ -46,6 +46,8 @@ class RecipeViewSet(ModelViewSet):
     filterset_fields = ('author',)
 
     def get_queryset(self):
+        """Get queryset method."""
+
         queryset = Recipe.objects.all()
         tags = self.request.query_params.getlist('tags')
         is_favorited = self.request.query_params.get('is_favorited')
@@ -59,16 +61,21 @@ class RecipeViewSet(ModelViewSet):
         return queryset
 
     def get_serializer_class(self):
+        """Get serializer for different action."""
+
         if self.action == 'create' or self.action == 'partial_update':
             return RecipeSerializerSave
         return RecipeSerializer
 
 
 class UserSubscription(generics.ListAPIView):
-    """View class for User subscription"""
+    """View class for User subscription."""
+
     serializer_class = UserSubscriptionSerializer
 
     def get_queryset(self):
+        """Get queryset method."""
+
         user = self.request.user
         queryset = user.is_subscribed.all().annotate(
             recipes_count=Count('recipe'))
@@ -79,12 +86,16 @@ class AddRemoveCartView(CuisineSubscriber):
     """View for cart"""
 
     def post(self, request, recipe_id):
+        """Check and add recipe to cart."""
+
         resp = self.subscribe(recipe_id, self.request.user.is_in_shopping_cart)
         if resp.status_code == status.HTTP_400_BAD_REQUEST:
             resp.data = {'recipe': f'recipe ID={recipe_id} already in cart'}
         return resp
 
     def delete(self, request, recipe_id):
+        """Check and delete recipe to cart."""
+
         resp = self.del_subscribe(
             recipe_id, self.request.user.is_in_shopping_cart)
         if resp.status_code == status.HTTP_400_BAD_REQUEST:
@@ -93,9 +104,11 @@ class AddRemoveCartView(CuisineSubscriber):
 
 
 class AddRemoveFavoriteView(CuisineSubscriber):
-    """View for favorite"""
+    """View for favorite."""
 
     def post(self, request, recipe_id):
+        """Check and add recipe to favorite."""
+
         resp = self.subscribe(recipe_id, self.request.user.is_favorite)
         if resp.status_code == status.HTTP_400_BAD_REQUEST:
             resp.data = {
@@ -103,6 +116,8 @@ class AddRemoveFavoriteView(CuisineSubscriber):
         return resp
 
     def delete(self, request, recipe_id):
+        """Check and delete recipe to favorite."""
+
         resp = self.del_subscribe(recipe_id, self.request.user.is_favorite)
         if resp.status_code == status.HTTP_400_BAD_REQUEST:
             resp.data = {'recipe': f'recipe ID={recipe_id} not in favorite'}
@@ -110,9 +125,11 @@ class AddRemoveFavoriteView(CuisineSubscriber):
 
 
 class AddRemoveSubscriptionView(APIView):
-    """View for subscription"""
+    """View for subscription."""
 
     def post(self, request, user_id):
+        """Check and add user to subscripton."""
+
         sub_user = get_object_or_404(User, pk=user_id)
         if sub_user in self.request.user.is_subscribed.get_queryset():
             return Response(
@@ -134,6 +151,8 @@ class AddRemoveSubscriptionView(APIView):
             return Response(serializer.data)
 
     def delete(self, request, user_id):
+        """Check and delete user to subscripton."""
+
         sub_user = get_object_or_404(User, pk=user_id)
         if sub_user in self.request.user.is_subscribed.get_queryset():
             self.request.user.is_subscribed.remove(sub_user)
@@ -147,6 +166,7 @@ class AddRemoveSubscriptionView(APIView):
 
 class UserShoppingCart(APIView):
     """View function for list of ingredients"""
+
     def get(self, request):
         shoping_cart = {}
         for recipe in self.request.user.is_in_shopping_cart.get_queryset():

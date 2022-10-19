@@ -23,10 +23,12 @@ class UserRegistrationSerializer(UserCreateSerializer):
 
 class SpecialUserSerializer(UserSerializer):
     """Serializer for User."""
+
     is_subscribed = serializers.SerializerMethodField()
 
     def get_is_subscribed(self, user):
-        """Returns true if user is subscribed"""
+        """Returns true if user is subscribed."""
+
         current_user = self.context.get('request').user
         return (
             not current_user.is_anonymous
@@ -46,7 +48,7 @@ class SpecialUserSerializer(UserSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    """Serializer for model Tag"""
+    """Serializer for model Tag."""
 
     class Meta:
         model = Tag
@@ -59,7 +61,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    """Serializer for model Ingredient"""
+    """Serializer for model Ingredient."""
 
     class Meta:
         model = Ingredient
@@ -71,7 +73,8 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
-    """Serializer for model RecipeIngredient"""
+    """Serializer for model RecipeIngredient."""
+
     name = serializers.CharField(source='ingredient.name')
     id = serializers.IntegerField(source='ingredient.pk')
     measurement_unit = serializers.CharField(
@@ -100,7 +103,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     def get_is_favorited(self, obj):
-        """Returns true if the recipe is in favorites"""
+        """Returns true if the recipe is in favorites."""
+
         user = self.context.get('request').user
         return (
             not user.is_anonymous
@@ -108,7 +112,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_is_in_shopping_cart(self, obj):
-        """Returns true if the recipe is in shopping carts"""
+        """Returns true if the recipe is in shopping carts."""
+
         user = self.context.get('request').user
         return (
             not user.is_anonymous
@@ -132,7 +137,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientField(serializers.Serializer):
-    """Serializer for ingredients inside a recipe"""
+    """Serializer for ingredients inside a recipe."""
+
     id = serializers.IntegerField(min_value=0,)
     amount = serializers.DecimalField(
         max_digits=5, decimal_places=1, min_value=0.01
@@ -140,6 +146,7 @@ class IngredientField(serializers.Serializer):
 
     def validate(self, data):
         """Ingredient check"""
+
         if not Ingredient.objects.filter(pk=data.get('id')).exists():
             raise serializers.ValidationError(
                 f'This ingredien id={data["id"]} doesn\'t exist')
@@ -148,6 +155,7 @@ class IngredientField(serializers.Serializer):
 
 class RecipeSerializerSave(serializers.ModelSerializer):
     """Serialazer for creating and updating model Recipe."""
+
     ingredients = IngredientField(many=True, allow_empty=False)
     tags = serializers.ListField(
         child=serializers.IntegerField(min_value=0), allow_empty=False,
@@ -155,7 +163,7 @@ class RecipeSerializerSave(serializers.ModelSerializer):
     image = Base64ImageField()
 
     def validate(self, data):
-        """Tags existence and unique ingredients check"""
+        """Tags existence and unique ingredients check."""
         tags = data.get('tags') if 'tags' in data.keys() else []
         for tag in tags:
             if not Tag.objects.filter(pk=tag).exists():
@@ -189,6 +197,7 @@ class RecipeSerializerSave(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         """Creates record in model Recipes."""
+
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         validated_data['author'] = self.context.get('request').user
@@ -209,6 +218,7 @@ class RecipeSerializerSave(serializers.ModelSerializer):
     @transaction.atomic
     def update(self, recipe, validated_data):
         """Update record in model Recipes."""
+
         recipe.image = validated_data.get('image', recipe.image)
         recipe.name = validated_data.get('name', recipe.name)
         recipe.text = validated_data.get('text', recipe.text)
@@ -231,7 +241,7 @@ class RecipeSerializerSave(serializers.ModelSerializer):
 
 
 class IsFavoritAndCart(serializers.ModelSerializer):
-    """Serializer for a recipe in favorite or cart"""
+    """Serializer for a recipe in favorite or cart."""
 
     class Meta:
         model = Recipe
@@ -244,12 +254,14 @@ class IsFavoritAndCart(serializers.ModelSerializer):
 
 
 class UserSubscriptionSerializer(SpecialUserSerializer):
-    """Serializer for user subscription"""
+    """Serializer for user subscription."""
+
     recipes = serializers.SerializerMethodField('get_items')
     recipes_count = serializers.IntegerField(read_only=True)
 
     def get_items(self, user):
-        """Limitation on the number of recipes"""
+        """Limitation on the number of recipes."""
+
         recipes_limit = self.context.get('request').query_params.get(
             'recipes_limit', default='')
         recipes = user.recipe.all()

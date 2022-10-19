@@ -2,6 +2,9 @@ from rest_framework import permissions
 
 
 class IsAuthorOrAdmin(permissions.BasePermission):
+    """List permission for authenticated, obj permission
+    for admin and author, or read only.
+    """
 
     def has_permission(self, request, view):
         return (

@@ -8,6 +8,7 @@ from recipes.models import Recipe
 
 
 class CuisineSubscriber(APIView):
+    """Custom class for subscription."""
 
     def subscribe(self, recipe_id, user_filed):
         recipe = get_object_or_404(Recipe, pk=recipe_id)
