@@ -56,7 +56,7 @@ class RecipeAdmin(admin.ModelAdmin):
     inlines = (RecipeIngredientInline, )
 
     def count_subscribers(self, obj):
-        count = obj.user_set.count()
+        count = obj.is_favorite.count()
         return format_html('{} subscribers', count)
 
     readonly_fields = ('count_subscribers', )
