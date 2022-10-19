@@ -74,7 +74,7 @@ Response samples
 After deploying the server on the local machine, you can see all api requests at [Redock](http://localhost/api/docs/)
 
 ## Filling the env file
-
+```
 **DB_ENGINE**=django.db.backends.postgresql  # indicate that we are working with postgresql
 **DB_NAME**=postgres  # database name
 **POSTGRES_USER**=postgres  # database login
@@ -84,7 +84,7 @@ After deploying the server on the local machine, you can see all api requests at
 **SECRET_KEY**=' ' # django Secret Key
 **DEBUG**= # True or False
 **ALLOWED_HOSTS**=[] # for example ['localhost', '127.0.0.1', 'web']
-
+```
 ## Commands to run an application in containers
 ```
 docker-compose up -d
