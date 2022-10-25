@@ -1,10 +1,5 @@
 ![statuspy workflow](https://github.com/Gollum959/foodgram-project-react/actions/workflows/cuisine_workflow.yml/badge.svg)
 
-[Foodgram](http://51.250.44.121/)
-
-[Admin](http://51.250.44.121/admin/)
-
-[Redock](http://51.250.44.121/api/docs/)
 
 [**Description of the project**](#description-of-the-project)
 
